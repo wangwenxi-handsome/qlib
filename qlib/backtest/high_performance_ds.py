@@ -216,7 +216,7 @@ class CN1Min_NumpyQuote(BaseQuote):
                 return self.data[stock_id][start_id:end_id]
             elif method is None:
                 stock_data = self.data[stock_id][start_id:end_id, self.columns[fields]]
-                stock_dt2idx = self.idx2dt[stock_id][start_id:end_id].to_list()
+                stock_dt2idx = self.idx2dt[stock_id][start_id:end_id]
                 return IndexData(stock_data, stock_dt2idx)
             else:
                 agg_stock_data = self._agg_data(self.data[stock_id][start_id:end_id, self.columns[fields]], method)
@@ -742,6 +742,8 @@ class NumpyOrderIndicator(BaseOrderIndicator):
     def sum_all_indicators(
         order_indicator, indicators: list, metrics: Union[str, List[str]], fill_value=None
     ) -> Dict[str, NumpySingleMetric]:
+        # NOTE: indicators could be a empty list when orders in lower level all fail
+
         # metrics is all metrics to add
         # metrics_id means the index in the NumpyOrderIndicator.ROW for metrics.
         if isinstance(metrics, str):
@@ -770,7 +772,7 @@ class NumpyOrderIndicator(BaseOrderIndicator):
             raise ValueError(f"fill value can not be None in NumpyOrderIndicator")
 
         # add metric and assign to order_indicator
-        metric_sum = sum(indicator_metrics)
+        metric_sum = sum(indicator_metrics)  # NOTE: indicator_metrics could be a empty list when `indicators` is empty
         if order_indicator.data is not None:
             raise ValueError(f"this function must assign to an empty order indicator")
         order_indicator.data = np.zeros((len(NumpyOrderIndicator.ROW), len(stocks)))
@@ -778,7 +780,7 @@ class NumpyOrderIndicator(BaseOrderIndicator):
         order_indicator.column_map = dict(zip(stocks, range(len(stocks))))
         for i in range(len(metrics)):
             order_indicator.row_tag[NumpyOrderIndicator.ROW_MAP[metrics[i]]] = 1
-            order_indicator.data[NumpyOrderIndicator.ROW_MAP[metrics[i]]] = metric_sum[i]
+            order_indicator.data[NumpyOrderIndicator.ROW_MAP[metrics[i]]] = metric_sum[i] if len(indicator_metrics) > 0 else fill_value
 
 
 class IndexData:

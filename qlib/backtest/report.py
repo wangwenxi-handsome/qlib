@@ -394,6 +394,8 @@ class Indicator:
             price_s = IndexData(price_s.values, list(price_s.index))
         elif isinstance(price_s, (int, float, np.floating)):
             price_s = IndexData([price_s], [trade_start_time])
+        elif isinstance(price_s, IndexData):
+            pass
         else:
             raise NotImplementedError(f"This type of input is not supported")
 
