@@ -769,6 +769,10 @@ class NumpyOrderIndicator(BaseOrderIndicator):
         else:
             raise ValueError(f"fill value can not be None in NumpyOrderIndicator")
 
+        # fill values with 0
+        for metric in indicator_metrics:
+            metric[metric == np.NaN] = 0
+
         # add metric and assign to order_indicator
         metric_sum = sum(indicator_metrics)
         if order_indicator.data is not None:
